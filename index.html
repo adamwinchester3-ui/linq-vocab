@@ -73,8 +73,20 @@ textarea:focus,input:focus{outline:none;border-color:#888}
 .hint{font-size:12px;color:#999;margin-top:8px}
 .save-row{display:flex;align-items:center;gap:8px;margin-top:12px}
 .save-status{font-size:12px;color:#999}
-
-/* 로그인 화면 */
+/* 학습기록 */
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-item{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:12px 16px;cursor:pointer;transition:background 0.1s}
+.history-item:hover{background:#f5f5f3}
+.history-title{font-size:14px;font-weight:500;color:#1a1a1a;margin-bottom:4px}
+.history-meta{font-size:12px;color:#999;display:flex;gap:12px}
+.history-detail{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1rem;display:none;margin-top:8px}
+.history-detail.show{display:block}
+.history-text{font-size:14px;line-height:2;color:#333}
+.history-words{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.hw{font-size:13px;padding:3px 10px;border-radius:10px;background:#E6F1FB;color:#0C447C}
+.back-btn{font-size:13px;color:#666;cursor:pointer;margin-bottom:12px;display:inline-flex;align-items:center;gap:4px}
+.back-btn:hover{color:#1a1a1a}
+/* 로그인 */
 #login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:1rem}
 #login-screen h2{font-size:18px;font-weight:500}
 #login-screen p{font-size:13px;color:#888}
@@ -85,7 +97,6 @@ textarea:focus,input:focus{outline:none;border-color:#888}
 <body>
 <div class="app">
 
-  <!-- 로그인 화면 -->
   <div id="login-screen">
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     <h2>Linq 단어 학습</h2>
@@ -94,7 +105,6 @@ textarea:focus,input:focus{outline:none;border-color:#888}
     <button class="btn primary" onclick="login()">시작하기</button>
   </div>
 
-  <!-- 메인 앱 -->
   <div id="main-app" style="display:none">
     <div class="header">
       <div class="header-left">
@@ -110,8 +120,10 @@ textarea:focus,input:focus{outline:none;border-color:#888}
     <div class="tabs">
       <button class="tab active" onclick="switchTab('read')">읽기</button>
       <button class="tab" onclick="switchTab('vocab')">단어장</button>
+      <button class="tab" onclick="switchTab('history')">학습 기록</button>
     </div>
 
+    <!-- 읽기 탭 -->
     <div id="tab-read">
       <div class="card">
         <label>텍스트 입력</label>
@@ -124,10 +136,8 @@ textarea:focus,input:focus{outline:none;border-color:#888}
           <button class="btn" onclick="loadSample()">예시 보기</button>
         </div>
       </div>
-
       <div class="loading-bar" id="loading-bar"><span class="spinner"></span> DeepL 번역 중...</div>
       <div class="reader" id="reader"><p class="empty-msg">위에서 텍스트를 입력하고 학습 시작을 눌러주세요.</p></div>
-
       <div class="panel" id="word-panel">
         <div class="panel-word" id="panel-word"></div>
         <div class="meaning-row">
@@ -140,7 +150,6 @@ textarea:focus,input:focus{outline:none;border-color:#888}
           <button class="sbtn s3" onclick="setStatus(3)">⭐ 아는 단어</button>
         </div>
       </div>
-
       <div class="panel phrase-panel" id="phrase-panel">
         <div class="phrase-label">💬 선택한 표현</div>
         <div class="panel-word" id="phrase-panel-word"></div>
@@ -154,9 +163,7 @@ textarea:focus,input:focus{outline:none;border-color:#888}
           <button class="sbtn s3" onclick="savePhraseStatus(3)">⭐ 아는 표현</button>
         </div>
       </div>
-
       <div class="hint" id="drag-hint" style="display:none">✋ 단어를 드래그하면 표현으로 묶어서 저장할 수 있어요</div>
-
       <div class="stats" id="stats" style="display:none;margin-top:1rem">
         <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">미분류</div></div>
         <div class="stat"><div class="stat-num" id="s-retry" style="color:#993C1D">0</div><div class="stat-label">다시 보기</div></div>
@@ -172,6 +179,7 @@ textarea:focus,input:focus{outline:none;border-color:#888}
       </div>
     </div>
 
+    <!-- 단어장 탭 -->
     <div id="tab-vocab" style="display:none">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div class="filter-row" style="margin:0">
@@ -185,6 +193,26 @@ textarea:focus,input:focus{outline:none;border-color:#888}
       </div>
       <div class="vocab-list" id="vocab-list"><p class="empty-msg" style="padding:1.5rem 0">아직 분류한 단어가 없어요.</p></div>
     </div>
+
+    <!-- 학습 기록 탭 -->
+    <div id="tab-history" style="display:none">
+      <div id="history-list-view">
+        <div class="history-list" id="history-list"><p class="empty-msg">아직 학습 기록이 없어요.</p></div>
+      </div>
+      <div id="history-detail-view" style="display:none">
+        <div class="back-btn" onclick="showHistoryList()">← 목록으로</div>
+        <div class="card">
+          <div style="font-size:13px;color:#999;margin-bottom:6px" id="detail-date"></div>
+          <div style="font-size:15px;font-weight:500;margin-bottom:12px" id="detail-title"></div>
+          <div class="divider"></div>
+          <div style="font-size:13px;color:#666;margin:10px 0 6px">텍스트</div>
+          <div class="history-text" id="detail-text"></div>
+          <div class="divider" style="margin-top:12px"></div>
+          <div style="font-size:13px;color:#666;margin:10px 0 6px">저장한 단어</div>
+          <div class="history-words" id="detail-words"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -193,11 +221,10 @@ const FR_STOP=new Set(['le','la','les','de','du','des','un','une','en','et','a',
 const SAMPLE=`Dans le cadre du protocole d'accord signé entre les deux pays, les représentants ont convenu d'établir un comité mixte pour surveiller l'application des mesures économiques. Cette initiative vise à renforcer la coopération bilatérale et à promouvoir des échanges commerciaux équitables.`;
 
 let currentUser='';
-let wordStatus={},wordDict={},phraseDict={},clickedWords=new Set();
-let currentWord=null,currentPhrase=null,vocabFilter='all';
+let wordStatus={},wordDict={},phraseDict={},historyList=[];
+let clickedWords=new Set(),currentWord=null,currentPhrase=null,vocabFilter='all';
 let allWordEls=[],startIdx=null,dragging=false;
 
-// 이름 입력 후 엔터
 document.getElementById('name-input').addEventListener('keydown',e=>{if(e.key==='Enter')login();});
 
 function login(){
@@ -209,10 +236,8 @@ function login(){
   document.getElementById('user-badge').textContent=name+'님';
   loadVocab();
 }
-
 function logout(){
-  currentUser='';
-  wordStatus={};wordDict={};phraseDict={};
+  currentUser='';wordStatus={};wordDict={};phraseDict={};historyList=[];
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('main-app').style.display='none';
   document.getElementById('name-input').value='';
@@ -223,15 +248,13 @@ async function saveVocab(){
   if(st)st.textContent='저장 중...';
   try{
     await fetch('/vocab/'+encodeURIComponent(currentUser),{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({wordStatus,wordDict,phraseDict})
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({wordStatus,wordDict,phraseDict,historyList})
     });
     if(st)st.textContent='✓ 저장됨';
     setTimeout(()=>{if(st)st.textContent='';},2000);
   }catch(e){if(st)st.textContent='저장 실패';}
 }
-
 async function loadVocab(){
   try{
     const res=await fetch('/vocab/'+encodeURIComponent(currentUser));
@@ -239,25 +262,24 @@ async function loadVocab(){
     if(data.wordStatus)wordStatus=data.wordStatus;
     if(data.wordDict)wordDict=data.wordDict;
     if(data.phraseDict)phraseDict=data.phraseDict;
+    if(data.historyList)historyList=data.historyList;
   }catch(e){}
 }
 
 async function deepl(texts){
-  const res=await fetch('/translate',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({texts:Array.isArray(texts)?texts:[texts]})
-  });
+  const res=await fetch('/translate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({texts:Array.isArray(texts)?texts:[texts]})});
   if(!res.ok)throw new Error('번역 서버 오류: '+res.status);
   const data=await res.json();
   return data.translations.map(t=>t.text);
 }
 
 function switchTab(t){
-  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='read'&&i===0)||(t==='vocab'&&i===1)));
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='read'&&i===0)||(t==='vocab'&&i===1)||(t==='history'&&i===2)));
   document.getElementById('tab-read').style.display=t==='read'?'block':'none';
   document.getElementById('tab-vocab').style.display=t==='vocab'?'block':'none';
+  document.getElementById('tab-history').style.display=t==='history'?'block':'none';
   if(t==='vocab')renderVocab();
+  if(t==='history')renderHistory();
 }
 
 function loadSample(){
@@ -292,9 +314,16 @@ async function startLearning(){
     }catch(e){alert('번역 오류: '+e.message);}
   }
 
+  // 학습 기록 저장
+  const title=text.replace(/\s+/g,' ').substring(0,40)+(text.length>40?'...':'');
+  const record={id:Date.now(),title,text,date:new Date().toLocaleDateString('ko-KR'),words:unknownWords};
+  historyList.unshift(record);
+  if(historyList.length>50)historyList=historyList.slice(0,50);
+
   document.getElementById('loading-bar').style.display='none';
   document.getElementById('start-btn').disabled=false;
   renderReader(tokens,known);
+  saveVocab();
 }
 
 function tokenize(text){
@@ -310,8 +339,7 @@ function tokenize(text){
 
 function renderReader(tokens,known){
   const reader=document.getElementById('reader');
-  reader.innerHTML='';allWordEls=[];
-  let idx=0;
+  reader.innerHTML='';allWordEls=[];let idx=0;
   tokens.forEach(tok=>{
     if(tok.type!=='word'){reader.appendChild(document.createTextNode(tok.display));return;}
     const clean=tok.clean;
@@ -320,12 +348,9 @@ function renderReader(tokens,known){
     span.className='word unknown';span.textContent=tok.display;
     span.dataset.word=clean;span.dataset.idx=idx++;
     wordStatus[clean]=wordStatus[clean]||'unknown';
-    applyStatusClass(span);
-    reader.appendChild(span);
-    allWordEls.push(span);
+    applyStatusClass(span);reader.appendChild(span);allWordEls.push(span);
   });
-  setupPointer(reader);
-  updateStats();
+  setupPointer(reader);updateStats();
   document.getElementById('stats').style.display='flex';
   document.getElementById('done-btn-wrap').style.display='block';
   document.getElementById('drag-hint').style.display='block';
@@ -338,8 +363,7 @@ function clearHL(){allWordEls.forEach(el=>el.classList.remove('drag-hl'));}
 function setupPointer(reader){
   reader.addEventListener('pointerdown',e=>{
     const w=getWordAt(e.clientX,e.clientY);if(!w)return;
-    reader.setPointerCapture(e.pointerId);
-    startIdx=+w.dataset.idx;dragging=false;
+    reader.setPointerCapture(e.pointerId);startIdx=+w.dataset.idx;dragging=false;
     hideWordPanel();hidePhrasePanel();e.preventDefault();
   });
   reader.addEventListener('pointermove',e=>{
@@ -350,16 +374,11 @@ function setupPointer(reader){
   });
   reader.addEventListener('pointerup',e=>{
     if(startIdx===null)return;
-    const w=getWordAt(e.clientX,e.clientY);
-    const endIdx=w?+w.dataset.idx:startIdx;
-    if(!dragging){
-      const el=allWordEls[startIdx];clearHL();startIdx=null;
-      if(el)showWordPanel(el);return;
-    }
+    const w=getWordAt(e.clientX,e.clientY);const endIdx=w?+w.dataset.idx:startIdx;
+    if(!dragging){const el=allWordEls[startIdx];clearHL();startIdx=null;if(el)showWordPanel(el);return;}
     const from=Math.min(startIdx,endIdx),to=Math.max(startIdx,endIdx);
     const phrase=allWordEls.slice(from,to+1).map(el=>el.textContent).join(' ').trim();
-    clearHL();startIdx=null;dragging=false;
-    if(phrase)showPhrasePanel(phrase);
+    clearHL();startIdx=null;dragging=false;if(phrase)showPhrasePanel(phrase);
   });
   reader.addEventListener('pointercancel',()=>{clearHL();startIdx=null;dragging=false;});
 }
@@ -368,8 +387,7 @@ function showWordPanel(el){
   currentWord=el.dataset.word;clickedWords.add(currentWord);
   document.getElementById('panel-word').textContent=el.textContent;
   document.getElementById('meaning-input').value=wordDict[currentWord]||'';
-  document.getElementById('word-panel').classList.add('show');
-  hidePhrasePanel();
+  document.getElementById('word-panel').classList.add('show');hidePhrasePanel();
 }
 function hideWordPanel(){document.getElementById('word-panel').classList.remove('show');currentWord=null;}
 
@@ -377,22 +395,14 @@ async function retranslateWord(){
   if(!currentWord)return;
   const btn=document.getElementById('retranslate-btn');
   btn.innerHTML='<span class="mini-spinner"></span>';btn.disabled=true;
-  try{
-    const word=document.getElementById('panel-word').textContent;
-    const [result]=await deepl([word]);
-    wordDict[currentWord]=result;
-    document.getElementById('meaning-input').value=result;
-  }catch(e){alert(e.message);}
+  try{const word=document.getElementById('panel-word').textContent;const[result]=await deepl([word]);wordDict[currentWord]=result;document.getElementById('meaning-input').value=result;}catch(e){alert(e.message);}
   btn.innerHTML='↺ 다시 번역';btn.disabled=false;
 }
 
 async function showPhrasePanel(phrase){
-  currentPhrase=phrase;
-  document.getElementById('phrase-panel-word').textContent=phrase;
-  const existing=phraseDict[phrase];
-  document.getElementById('phrase-meaning-input').value=existing?existing.meaning:'';
-  document.getElementById('phrase-panel').classList.add('show');
-  hideWordPanel();
+  currentPhrase=phrase;document.getElementById('phrase-panel-word').textContent=phrase;
+  const existing=phraseDict[phrase];document.getElementById('phrase-meaning-input').value=existing?existing.meaning:'';
+  document.getElementById('phrase-panel').classList.add('show');hideWordPanel();
   if(!existing||!existing.meaning)retranslatePhrase();
 }
 function hidePhrasePanel(){document.getElementById('phrase-panel').classList.remove('show');currentPhrase=null;}
@@ -401,12 +411,7 @@ async function retranslatePhrase(){
   if(!currentPhrase)return;
   const btn=document.getElementById('phrase-retranslate-btn');
   btn.innerHTML='<span class="mini-spinner"></span>';btn.disabled=true;
-  try{
-    const [result]=await deepl([currentPhrase]);
-    if(!phraseDict[currentPhrase])phraseDict[currentPhrase]={status:null,meaning:''};
-    phraseDict[currentPhrase].meaning=result;
-    document.getElementById('phrase-meaning-input').value=result;
-  }catch(e){alert(e.message);}
+  try{const[result]=await deepl([currentPhrase]);if(!phraseDict[currentPhrase])phraseDict[currentPhrase]={status:null,meaning:''};phraseDict[currentPhrase].meaning=result;document.getElementById('phrase-meaning-input').value=result;}catch(e){alert(e.message);}
   btn.innerHTML='↺ 다시 번역';btn.disabled=false;
 }
 
@@ -418,14 +423,11 @@ function setStatus(n){
   allWordEls.filter(el=>el.dataset.word===currentWord).forEach(el=>applyStatusClass(el));
   updateStats();hideWordPanel();
 }
-
 function savePhraseStatus(n){
   if(!currentPhrase)return;
-  const meaning=document.getElementById('phrase-meaning-input').value.trim();
-  phraseDict[currentPhrase]={status:n,meaning};
+  phraseDict[currentPhrase]={status:n,meaning:document.getElementById('phrase-meaning-input').value.trim()};
   updateStats();hidePhrasePanel();
 }
-
 function applyStatusClass(el){
   const s=wordStatus[el.dataset.word];el.className='word';
   if(s==='unknown')el.classList.add('unknown');
@@ -433,15 +435,12 @@ function applyStatusClass(el){
   else if(s===2)el.classList.add('status-2');
   else if(s===3)el.classList.add('status-3');
 }
-
 function markAllUnclickedAsKnown(){
   Object.keys(wordStatus).forEach(w=>{
     if(!clickedWords.has(w)){wordStatus[w]=3;allWordEls.filter(el=>el.dataset.word===w).forEach(el=>applyStatusClass(el));}
   });
-  updateStats();document.getElementById('done-btn-wrap').style.display='none';
-  saveVocab();
+  updateStats();document.getElementById('done-btn-wrap').style.display='none';saveVocab();
 }
-
 function updateStats(){
   const v=Object.values(wordStatus);
   document.getElementById('s-total').textContent=v.filter(x=>x==='unknown').length;
@@ -449,28 +448,22 @@ function updateStats(){
   document.getElementById('s-review').textContent=v.filter(x=>x===2).length;
   document.getElementById('s-known3').textContent=v.filter(x=>x===3).length;
 }
-
 function filterVocab(f,btn){
   vocabFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');renderVocab();
 }
-
 function renderVocab(){
-  const list=document.getElementById('vocab-list');
-  let items=[];
+  const list=document.getElementById('vocab-list');let items=[];
   if(vocabFilter!=='phrase'){
     Object.entries(wordStatus).filter(([,v])=>v!=='unknown'&&(vocabFilter==='all'||v===vocabFilter))
       .forEach(([word,status])=>items.push({word,meaning:wordDict[word]||'',status,isPhrase:false}));
   }
   if(vocabFilter==='all'||vocabFilter==='phrase'){
-    Object.entries(phraseDict).forEach(([phrase,{status,meaning}])=>
-      items.push({word:phrase,meaning,status,isPhrase:true}));
+    Object.entries(phraseDict).forEach(([phrase,{status,meaning}])=>items.push({word:phrase,meaning,status,isPhrase:true}));
   }
   if(!items.length){list.innerHTML='<p class="empty-msg" style="padding:1.5rem 0">해당하는 단어가 없어요.</p>';return;}
-  const order={1:0,2:1,3:2};
-  items.sort((a,b)=>(order[a.status]??3)-(order[b.status]??3));
-  const labels={1:'다시 보기',2:'복습 중',3:'아는 단어'};
-  const cls={1:'b1',2:'b2',3:'b3'};
+  const order={1:0,2:1,3:2};items.sort((a,b)=>(order[a.status]??3)-(order[b.status]??3));
+  const labels={1:'다시 보기',2:'복습 중',3:'아는 단어'};const cls={1:'b1',2:'b2',3:'b3'};
   list.innerHTML=items.map(({word,meaning,status,isPhrase})=>`
     <div class="vocab-item">
       <span class="vocab-word">${word}</span>
@@ -478,10 +471,41 @@ function renderVocab(){
       <span class="badge ${isPhrase?'bphrase':cls[status]||''}">${isPhrase?'💬 표현':labels[status]||''}</span>
     </div>`).join('');
 }
-
 function updateMeaning(word,val,isPhrase){
-  if(isPhrase){if(phraseDict[word])phraseDict[word].meaning=val;}
-  else wordDict[word]=val;
+  if(isPhrase){if(phraseDict[word])phraseDict[word].meaning=val;}else wordDict[word]=val;
+}
+
+// 학습 기록
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  showHistoryList();
+  if(!historyList.length){list.innerHTML='<p class="empty-msg">아직 학습 기록이 없어요.</p>';return;}
+  list.innerHTML=historyList.map(r=>`
+    <div class="history-item" onclick="showHistoryDetail(${r.id})">
+      <div class="history-title">${r.title}</div>
+      <div class="history-meta">
+        <span>📅 ${r.date}</span>
+        <span>📝 단어 ${r.words?r.words.length:0}개</span>
+      </div>
+    </div>`).join('');
+}
+function showHistoryList(){
+  document.getElementById('history-list-view').style.display='block';
+  document.getElementById('history-detail-view').style.display='none';
+}
+function showHistoryDetail(id){
+  const r=historyList.find(x=>x.id===id);if(!r)return;
+  document.getElementById('detail-date').textContent='📅 '+r.date;
+  document.getElementById('detail-title').textContent=r.title;
+  document.getElementById('detail-text').textContent=r.text;
+  const wordsEl=document.getElementById('detail-words');
+  if(r.words&&r.words.length){
+    wordsEl.innerHTML=r.words.map(w=>`<span class="hw">${w}${wordDict[w]?' — '+wordDict[w]:''}</span>`).join('');
+  } else {
+    wordsEl.innerHTML='<span style="color:#999;font-size:13px">없음</span>';
+  }
+  document.getElementById('history-list-view').style.display='none';
+  document.getElementById('history-detail-view').style.display='block';
 }
 </script>
 </body>
