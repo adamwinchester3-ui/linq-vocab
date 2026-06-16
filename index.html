@@ -272,7 +272,7 @@ async function startLearning(){
   const userKnown=new Set(document.getElementById('known-input').value.split(',').map(w=>w.trim().toLowerCase()).filter(Boolean));
   const known=userKnown; // FR_STOP 자동 제외 없음 — 전치사/관사도 모두 표시
   const tokens=tokenize(text);
-  const allWords=[...new Set(tokens.filter(t=>t.type==='word').map(t=>t.clean).filter(w=>w.length>1&&!known.has(w)))];
+  const allWords=[...new Set(tokens.filter(t=>t.type==='word').map(t=>t.clean).filter(w=>w.length>0&&!known.has(w)))];
   const prevStatus={...wordStatus};
   wordStatus={};clickedWords=new Set();allWordEls=[];
   allWords.forEach(w=>wordStatus[w]=prevStatus[w]||'unknown');
@@ -316,7 +316,7 @@ function renderReader(tokens,known){
   tokens.forEach(tok=>{
     if(tok.type!=='word'){reader.appendChild(document.createTextNode(tok.display));return;}
     const clean=tok.clean;
-    if(clean.length<=1||known.has(clean)){reader.appendChild(document.createTextNode(tok.display));return;}
+    if(known.has(clean)){reader.appendChild(document.createTextNode(tok.display));return;}
     const span=document.createElement('span');
     span.textContent=tok.display;
     span.dataset.word=clean;span.dataset.idx=idx++;
@@ -340,9 +340,8 @@ function clearHL(){allWordEls.forEach(el=>el.classList.remove('drag-hl'));}
 function setupPointer(reader){
   reader.addEventListener('pointerdown',e=>{
     const w=getWordAt(e.clientX,e.clientY);if(!w)return;
-    reader.setPointerCapture(e.pointerId);
     startIdx=+w.dataset.idx;dragging=false;
-    hideWordPanel();hidePhrasePanel();e.preventDefault();
+    hideWordPanel();hidePhrasePanel();
   });
   reader.addEventListener('pointermove',e=>{
     if(startIdx===null)return;
