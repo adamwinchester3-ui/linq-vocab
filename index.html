@@ -28,7 +28,8 @@ textarea:focus,input:focus{outline:none;border-color:#888}
 .btn.done{background:#EAF3DE;color:#3B6D11;border-color:#97C459}
 .btn.save{background:#E6F1FB;color:#0C447C;border-color:#378ADD}
 .divider{border:none;border-top:0.5px solid #eee;margin:10px 0}
-.reader{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1.25rem;line-height:2.2;font-size:15px;-webkit-user-select:none;user-select:none;touch-action:none}
+.reader{background:#fff;border:0.5px solid #e0e0e0;border-radius:12px;padding:1.25rem;line-height:2.2;font-size:15px}
+.reader-content{-webkit-user-select:none;user-select:none;touch-action:none}
 .word{display:inline;padding:1px 1px;margin:0;border-radius:2px;cursor:pointer}
 .word.word-stop{background:none;cursor:pointer}
 .word.unknown{background:#E6F1FB;color:#0C447C;text-decoration:underline dotted #378ADD}
@@ -127,7 +128,9 @@ textarea:focus,input:focus{outline:none;border-color:#888}
       </div>
 
       <div class="loading-bar" id="loading-bar"><span class="spinner"></span> DeepL 번역 중...</div>
-      <div class="reader" id="reader"><p class="empty-msg">위에서 텍스트를 입력하고 학습 시작을 눌러주세요.</p></div>
+      <div class="reader" id="reader-wrap">
+        <div class="reader-content" id="reader"><p class="empty-msg">위에서 텍스트를 입력하고 학습 시작을 눌러주세요.</p></div>
+      </div>
 
       <div class="panel" id="word-panel">
         <div class="panel-word" id="panel-word"></div>
@@ -299,10 +302,10 @@ async function startLearning(){
 }
 
 function tokenize(text){
-  const result=[],re=/([a-zA-ZÀ-ÿ]+(?:['''][a-zA-ZÀ-ÿ]+)?)|(\s+)|([^\w\s])/g;
+  const result=[],re=/([\p{L}]+(?:[''''][\p{L}]+)?)|(\s+)|([^\p{L}\s])/gu;
   let m;
   while((m=re.exec(text))!==null){
-    if(m[1]) result.push({type:'word',display:m[1],clean:m[1].toLowerCase().replace(/[''']/g,'')});
+    if(m[1]) result.push({type:'word',display:m[1],clean:m[1].toLowerCase().replace(/['''']/g,'')});
     else if(m[2]) result.push({type:'space',display:m[2]});
     else result.push({type:'punct',display:m[3]});
   }
